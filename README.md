@@ -40,6 +40,17 @@ The original system failed because the `attendance` table didn't exist in the da
    - Backend API: http://localhost:5000
    - Keycloak Admin: http://localhost:8080 (admin/admin)
 
+### 🌐 Network Deployment (For Classroom Use)
+
+To make the system accessible from other devices on the network:
+
+```bash
+# Automated network deployment
+./deploy-network.sh
+```
+
+This will automatically configure the system for network access. See [NETWORK_DEPLOYMENT.md](NETWORK_DEPLOYMENT.md) for detailed instructions.
+
 ## 👨‍🎓 Usage Guide
 
 ### For Students:
@@ -52,11 +63,17 @@ The original system failed because the `attendance` table didn't exist in the da
 2. **Submit Attendance**:
    - Select status: Present, Absent, or Late
    - Click "Submit Attendance"
-   - See success confirmation
+   - See success modal with confirmation message
+   - Choose to "Continue" or "Logout"
 
 3. **View Records**:
    - See all your attendance records in the table below
    - Records show date, status, and submission time
+
+4. **Logout**:
+   - Click the "Logout" button in the top-right corner
+   - Or use the logout option in the success modal
+   - Session is cleared and you return to login page
 
 ### For Developers:
 
@@ -133,7 +150,27 @@ curl http://localhost:5000/health
 docker-compose exec db pg_isready -U user -d attendance_db
 ```
 
+### Test New Features:
+```bash
+# Test success modal and logout functionality
+python3 test_success_modal.py
+```
+
 ## 🔧 Troubleshooting
+
+### 🚨 Database Container Fails to Start
+
+**Issue**: `✘ Container testrepo-db-1 Error - dependency failed to start: container testrepo-db-1 is unhealthy`
+
+**✅ Solution (Option 1 - Implemented)**:
+1. **Delete database volume** in Docker Desktop:
+   - Go to **Volumes** tab
+   - Delete `testrepo_postgres_data` volume
+2. **Start services**: `docker-compose up --build -d`
+
+**📋 Why this works**: The system now uses `minimal-init.sql` with simplified PostgreSQL syntax that avoids startup issues.
+
+**🆘 If Option 1 fails**: See `DATABASE_TROUBLESHOOTING.md` for additional solutions.
 
 ### Common Issues:
 
@@ -170,12 +207,15 @@ docker-compose up --build -d
 ### ✅ Working Features:
 - Student login with Keycloak
 - Attendance submission (Present/Absent/Late)
+- **Success modal** with confirmation message
+- **Logout functionality** with session clearing
 - Attendance history viewing
 - Duplicate prevention
 - Data persistence
 - Error handling and validation
 - Health monitoring
 - Responsive UI
+- Mobile-friendly design
 
 ### 🔄 Potential Improvements:
 - Admin panel for teachers
@@ -190,9 +230,15 @@ docker-compose up --build -d
 ### Key Files:
 - `backend/main.py` - FastAPI application with database logic
 - `frontend/src/App.js` - React frontend with authentication
-- `init.sql` - Database initialization script
+- `minimal-init.sql` - Simplified database initialization script
 - `docker-compose.yml` - Service orchestration
 - `keycloak/school-realm.json` - Authentication configuration
+
+### Database Troubleshooting Files:
+- `DATABASE_TROUBLESHOOTING.md` - Complete troubleshooting guide
+- `OPTION_1_IMPLEMENTED.md` - Current database fix implementation
+- `fix-database.sh` - Automated fix script
+- `docker-compose-no-init.yml` - Fallback without init script
 
 ### Environment Variables:
 - `REACT_APP_API_URL` - Frontend API endpoint

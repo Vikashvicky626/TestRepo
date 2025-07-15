@@ -7,7 +7,9 @@ services:
       backend:
         condition: service_healthy
     environment:
-      - REACT_APP_API_URL=http://localhost:5000
+      - REACT_APP_API_URL=http://${HOST_IP:-localhost}:5000
+      - REACT_APP_KEYCLOAK_URL=http://${HOST_IP:-localhost}:8080
+      - REACT_APP_FRONTEND_URL=http://${HOST_IP:-localhost}:3000
     restart: unless-stopped
 
   backend:
@@ -19,6 +21,7 @@ services:
         condition: service_healthy
     environment:
       - DATABASE_URL=postgresql://user:pass@db:5432/attendance_db
+      - HOST_IP=${HOST_IP:-localhost}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
@@ -38,7 +41,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./minimal-init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U user -d attendance_db"]
       interval: 10s
@@ -52,10 +55,14 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./keycloak:/opt/keycloak/data/import
+      - ./keycloak/school-realm-network.json:/opt/keycloak/data/import/school-realm.json
     environment:
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_HOSTNAME_STRICT=false
+      - KC_HOSTNAME_STRICT_HTTPS=false
+      - KC_HTTP_ENABLED=true
+      - KC_HOSTNAME_STRICT_BACKCHANNEL=false
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]

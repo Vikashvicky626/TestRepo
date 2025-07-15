@@ -8,8 +8,14 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const validStatuses = ['Present', 'Absent', 'Late'];
+  
+  // Configuration from environment variables
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+  const KEYCLOAK_URL = process.env.REACT_APP_KEYCLOAK_URL || 'http://localhost:8080';
+  const FRONTEND_URL = process.env.REACT_APP_FRONTEND_URL || 'http://localhost:3000';
 
   const handleSubmit = async () => {
     if (!status || !validStatuses.includes(status)) {
@@ -22,7 +28,7 @@ function App() {
     setSuccess('');
 
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/attendance`, {
+      const response = await axios.post(`${API_URL}/attendance`, {
         date: new Date().toISOString().split('T')[0],
         status
       }, {
@@ -30,6 +36,7 @@ function App() {
       });
 
       setSuccess(response.data.message || 'Attendance submitted successfully!');
+      setShowSuccessModal(true);
       loadAttendance();
       
     } catch (err) {
@@ -51,7 +58,7 @@ function App() {
     if (!token) return;
 
     try {
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/attendance`, {
+      const res = await axios.get(`${API_URL}/attendance`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAttendance(res.data);
@@ -68,7 +75,7 @@ function App() {
 
   const checkHealth = async () => {
     try {
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/health`);
+      const res = await axios.get(`${API_URL}/health`);
       console.log('Health check:', res.data);
     } catch (err) {
       console.error('Health check failed:', err);
@@ -114,6 +121,27 @@ function App() {
     setSuccess('');
   };
 
+  const handleLogout = () => {
+    // Clear token and attendance data
+    setToken('');
+    setAttendance([]);
+    setError('');
+    setSuccess('');
+    setShowSuccessModal(false);
+    
+    // Clear URL fragment
+    window.history.replaceState({}, document.title, window.location.pathname);
+    
+    // Optional: Clear local storage if any
+    localStorage.clear();
+    sessionStorage.clear();
+  };
+
+  const closeSuccessModal = () => {
+    setShowSuccessModal(false);
+    setSuccess('');
+  };
+
   return (
     <div style={{ 
       padding: '2em', 
@@ -134,8 +162,8 @@ function App() {
       {!token ? (
         <div style={{ textAlign: 'center', padding: '3em' }}>
           <h2 style={{ color: '#666', marginBottom: '1em' }}>Please Login to Continue</h2>
-          <a 
-            href="http://localhost:8080/realms/school/protocol/openid-connect/auth?client_id=frontend&response_type=token&redirect_uri=http://localhost:3000"
+                     <a 
+             href={`${KEYCLOAK_URL}/realms/school/protocol/openid-connect/auth?client_id=frontend&response_type=token&redirect_uri=${FRONTEND_URL}`}
             style={{
               backgroundColor: '#4CAF50',
               color: 'white',
@@ -152,16 +180,41 @@ function App() {
             🔑 Login with Keycloak
           </a>
         </div>
-      ) : (
-        <div>
-          <div style={{ 
-            backgroundColor: '#f9f9f9', 
-            padding: '2em', 
-            borderRadius: '8px',
-            marginBottom: '2em',
-            border: '1px solid #ddd'
-          }}>
-            <h2 style={{ color: '#333', marginBottom: '1em' }}>📝 Submit Today's Attendance</h2>
+             ) : (
+         <div>
+           {/* Logout Button */}
+           <div style={{ 
+             display: 'flex', 
+             justifyContent: 'flex-end', 
+             marginBottom: '1em' 
+           }}>
+             <button 
+               onClick={handleLogout}
+               style={{
+                 backgroundColor: '#f44336',
+                 color: 'white',
+                 padding: '8px 16px',
+                 border: 'none',
+                 borderRadius: '4px',
+                 cursor: 'pointer',
+                 fontSize: '14px',
+                 transition: 'background-color 0.3s'
+               }}
+               onMouseOver={(e) => e.target.style.backgroundColor = '#d32f2f'}
+               onMouseOut={(e) => e.target.style.backgroundColor = '#f44336'}
+             >
+               🚪 Logout
+             </button>
+           </div>
+
+           <div style={{ 
+             backgroundColor: '#f9f9f9', 
+             padding: '2em', 
+             borderRadius: '8px',
+             marginBottom: '2em',
+             border: '1px solid #ddd'
+           }}>
+             <h2 style={{ color: '#333', marginBottom: '1em' }}>📝 Submit Today's Attendance</h2>
             
             {error && (
               <div style={{ 
@@ -363,6 +416,95 @@ function App() {
                 </table>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div style={{
+          position: 'fixed',
+          top: '0',
+          left: '0',
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '2em',
+            borderRadius: '12px',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+            textAlign: 'center',
+            maxWidth: '400px',
+            width: '90%',
+            animation: 'fadeIn 0.3s ease-in-out'
+          }}>
+            <div style={{
+              fontSize: '48px',
+              marginBottom: '1em',
+              color: '#4CAF50'
+            }}>
+              ✅
+            </div>
+            <h2 style={{
+              color: '#2e7d32',
+              marginBottom: '1em',
+              fontSize: '24px'
+            }}>
+              Attendance Submitted Successfully!
+            </h2>
+            <p style={{
+              color: '#666',
+              marginBottom: '2em',
+              fontSize: '16px'
+            }}>
+              Your attendance for today has been recorded. Thank you!
+            </p>
+            <div style={{
+              display: 'flex',
+              gap: '1em',
+              justifyContent: 'center'
+            }}>
+              <button
+                onClick={closeSuccessModal}
+                style={{
+                  backgroundColor: '#4CAF50',
+                  color: 'white',
+                  padding: '12px 24px',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '16px',
+                  transition: 'background-color 0.3s'
+                }}
+                onMouseOver={(e) => e.target.style.backgroundColor = '#45a049'}
+                onMouseOut={(e) => e.target.style.backgroundColor = '#4CAF50'}
+              >
+                Continue
+              </button>
+              <button
+                onClick={handleLogout}
+                style={{
+                  backgroundColor: '#f44336',
+                  color: 'white',
+                  padding: '12px 24px',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '16px',
+                  transition: 'background-color 0.3s'
+                }}
+                onMouseOver={(e) => e.target.style.backgroundColor = '#d32f2f'}
+                onMouseOut={(e) => e.target.style.backgroundColor = '#f44336'}
+              >
+                🚪 Logout
+              </button>
+            </div>
           </div>
         </div>
       )}
