@@ -12,6 +12,12 @@
 HOST_IP.txt
 network-config.json
 
+# Backup files from troubleshooting
+docker-compose.yml.backup
+docker-compose.yml.bak
+*.backup
+*.bak
+
 # Python
 __pycache__/
 *.py[cod]
