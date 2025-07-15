@@ -158,6 +158,20 @@ python3 test_success_modal.py
 
 ## 🔧 Troubleshooting
 
+### 🚨 Database Container Fails to Start
+
+**Issue**: `✘ Container testrepo-db-1 Error - dependency failed to start: container testrepo-db-1 is unhealthy`
+
+**✅ Solution (Option 1 - Implemented)**:
+1. **Delete database volume** in Docker Desktop:
+   - Go to **Volumes** tab
+   - Delete `testrepo_postgres_data` volume
+2. **Start services**: `docker-compose up --build -d`
+
+**📋 Why this works**: The system now uses `minimal-init.sql` with simplified PostgreSQL syntax that avoids startup issues.
+
+**🆘 If Option 1 fails**: See `DATABASE_TROUBLESHOOTING.md` for additional solutions.
+
 ### Common Issues:
 
 1. **Services not starting**:
@@ -216,9 +230,15 @@ docker-compose up --build -d
 ### Key Files:
 - `backend/main.py` - FastAPI application with database logic
 - `frontend/src/App.js` - React frontend with authentication
-- `init.sql` - Database initialization script
+- `minimal-init.sql` - Simplified database initialization script
 - `docker-compose.yml` - Service orchestration
 - `keycloak/school-realm.json` - Authentication configuration
+
+### Database Troubleshooting Files:
+- `DATABASE_TROUBLESHOOTING.md` - Complete troubleshooting guide
+- `OPTION_1_IMPLEMENTED.md` - Current database fix implementation
+- `fix-database.sh` - Automated fix script
+- `docker-compose-no-init.yml` - Fallback without init script
 
 ### Environment Variables:
 - `REACT_APP_API_URL` - Frontend API endpoint
