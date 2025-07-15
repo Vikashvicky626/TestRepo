@@ -10,6 +10,11 @@ function App() {
   const [success, setSuccess] = useState('');
 
   const validStatuses = ['Present', 'Absent', 'Late'];
+  
+  // Configuration from environment variables
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+  const KEYCLOAK_URL = process.env.REACT_APP_KEYCLOAK_URL || 'http://localhost:8080';
+  const FRONTEND_URL = process.env.REACT_APP_FRONTEND_URL || 'http://localhost:3000';
 
   const handleSubmit = async () => {
     if (!status || !validStatuses.includes(status)) {
@@ -22,7 +27,7 @@ function App() {
     setSuccess('');
 
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/attendance`, {
+      const response = await axios.post(`${API_URL}/attendance`, {
         date: new Date().toISOString().split('T')[0],
         status
       }, {
@@ -51,7 +56,7 @@ function App() {
     if (!token) return;
 
     try {
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/attendance`, {
+      const res = await axios.get(`${API_URL}/attendance`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAttendance(res.data);
@@ -68,7 +73,7 @@ function App() {
 
   const checkHealth = async () => {
     try {
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/health`);
+      const res = await axios.get(`${API_URL}/health`);
       console.log('Health check:', res.data);
     } catch (err) {
       console.error('Health check failed:', err);
@@ -134,8 +139,8 @@ function App() {
       {!token ? (
         <div style={{ textAlign: 'center', padding: '3em' }}>
           <h2 style={{ color: '#666', marginBottom: '1em' }}>Please Login to Continue</h2>
-          <a 
-            href="http://localhost:8080/realms/school/protocol/openid-connect/auth?client_id=frontend&response_type=token&redirect_uri=http://localhost:3000"
+                     <a 
+             href={`${KEYCLOAK_URL}/realms/school/protocol/openid-connect/auth?client_id=frontend&response_type=token&redirect_uri=${FRONTEND_URL}`}
             style={{
               backgroundColor: '#4CAF50',
               color: 'white',

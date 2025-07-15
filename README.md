@@ -40,6 +40,17 @@ The original system failed because the `attendance` table didn't exist in the da
    - Backend API: http://localhost:5000
    - Keycloak Admin: http://localhost:8080 (admin/admin)
 
+### 🌐 Network Deployment (For Classroom Use)
+
+To make the system accessible from other devices on the network:
+
+```bash
+# Automated network deployment
+./deploy-network.sh
+```
+
+This will automatically configure the system for network access. See [NETWORK_DEPLOYMENT.md](NETWORK_DEPLOYMENT.md) for detailed instructions.
+
 ## 👨‍🎓 Usage Guide
 
 ### For Students:
