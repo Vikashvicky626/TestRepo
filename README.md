@@ -63,11 +63,17 @@ This will automatically configure the system for network access. See [NETWORK_DE
 2. **Submit Attendance**:
    - Select status: Present, Absent, or Late
    - Click "Submit Attendance"
-   - See success confirmation
+   - See success modal with confirmation message
+   - Choose to "Continue" or "Logout"
 
 3. **View Records**:
    - See all your attendance records in the table below
    - Records show date, status, and submission time
+
+4. **Logout**:
+   - Click the "Logout" button in the top-right corner
+   - Or use the logout option in the success modal
+   - Session is cleared and you return to login page
 
 ### For Developers:
 
@@ -144,6 +150,12 @@ curl http://localhost:5000/health
 docker-compose exec db pg_isready -U user -d attendance_db
 ```
 
+### Test New Features:
+```bash
+# Test success modal and logout functionality
+python3 test_success_modal.py
+```
+
 ## 🔧 Troubleshooting
 
 ### Common Issues:
@@ -181,12 +193,15 @@ docker-compose up --build -d
 ### ✅ Working Features:
 - Student login with Keycloak
 - Attendance submission (Present/Absent/Late)
+- **Success modal** with confirmation message
+- **Logout functionality** with session clearing
 - Attendance history viewing
 - Duplicate prevention
 - Data persistence
 - Error handling and validation
 - Health monitoring
 - Responsive UI
+- Mobile-friendly design
 
 ### 🔄 Potential Improvements:
 - Admin panel for teachers
