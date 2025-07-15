@@ -26,19 +26,47 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
--- Create trigger to automatically update updated_at
-CREATE TRIGGER IF NOT EXISTS update_attendance_updated_at 
-    BEFORE UPDATE ON attendance 
-    FOR EACH ROW 
-    EXECUTE FUNCTION update_updated_at_column();
+-- Create trigger to automatically update updated_at using DO block for safety
+DO $$
+BEGIN
+    -- Drop trigger if it exists
+    DROP TRIGGER IF EXISTS update_attendance_updated_at ON attendance;
+    
+    -- Create the trigger
+    CREATE TRIGGER update_attendance_updated_at 
+        BEFORE UPDATE ON attendance 
+        FOR EACH ROW 
+        EXECUTE FUNCTION update_updated_at_column();
+        
+    RAISE NOTICE 'Trigger update_attendance_updated_at created successfully';
+EXCEPTION
+    WHEN others THEN
+        RAISE NOTICE 'Error creating trigger: %', SQLERRM;
+END;
+$$;
 
--- Insert some sample data for testing (optional)
--- INSERT INTO attendance (username, date, status) VALUES 
--- ('student1', '2024-01-15', 'Present'),
--- ('student1', '2024-01-14', 'Absent'),
--- ('student1', '2024-01-13', 'Late')
--- ON CONFLICT (username, date) DO NOTHING;
+-- Verify table creation
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'attendance') THEN
+        RAISE NOTICE 'Table attendance created successfully';
+    ELSE
+        RAISE WARNING 'Table attendance was not created';
+    END IF;
+END;
+$$;
 
--- Grant necessary permissions
--- GRANT ALL PRIVILEGES ON TABLE attendance TO user;
--- GRANT USAGE, SELECT ON SEQUENCE attendance_id_seq TO user;
+-- Insert some sample data for testing (optional - uncomment if needed)
+/*
+INSERT INTO attendance (username, date, status) VALUES 
+('student1', '2024-01-15', 'Present'),
+('student1', '2024-01-14', 'Absent'),
+('student1', '2024-01-13', 'Late')
+ON CONFLICT (username, date) DO NOTHING;
+*/
+
+-- Grant necessary permissions (uncomment if needed)
+/*
+GRANT ALL PRIVILEGES ON TABLE attendance TO user;
+GRANT USAGE, SELECT ON SEQUENCE attendance_id_seq TO user;
+*/
