@@ -7,21 +7,31 @@ function App() {
   const [attendance, setAttendance] = useState([]);
 
   const handleSubmit = async () => {
-    await axios.post(`${process.env.REACT_APP_API_URL}/attendance`, {
-      date: new Date().toISOString().split('T')[0],
-      status
-    }, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    alert("Attendance submitted!");
-    loadAttendance();
+    try {
+      await axios.post(`${process.env.REACT_APP_API_URL}/attendance`, {
+        date: new Date().toISOString().split('T')[0],
+        status
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      alert("Attendance submitted!");
+      loadAttendance();
+    } catch (error) {
+      console.error('Error submitting attendance:', error);
+      alert(`Error submitting attendance: ${error.response?.data?.detail || 'Unknown error'}`);
+    }
   };
 
   const loadAttendance = async () => {
-    const res = await axios.get(`${process.env.REACT_APP_API_URL}/attendance`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    setAttendance(res.data);
+    try {
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/attendance`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setAttendance(res.data);
+    } catch (error) {
+      console.error('Error loading attendance:', error);
+      alert(`Error loading attendance: ${error.response?.data?.detail || 'Unknown error'}`);
+    }
   };
 
   useEffect(() => {
@@ -30,6 +40,7 @@ function App() {
     const _token = fragment.get("access_token");
     if (_token) {
       setToken(_token);
+      // Load attendance with proper error handling
       loadAttendance();
     }
   }, []);
