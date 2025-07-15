@@ -51,6 +51,26 @@ To make the system accessible from other devices on the network:
 
 This will automatically configure the system for network access. See [NETWORK_DEPLOYMENT.md](NETWORK_DEPLOYMENT.md) for detailed instructions.
 
+### ☁️ Cloud Deployment (For Global Access)
+
+To deploy the system on a cloud VM for global accessibility:
+
+```bash
+# Cloud deployment with SSL and domain
+cp .env.production.example .env.production
+nano .env.production  # Edit with your configuration
+./deploy-cloud.sh
+```
+
+This will set up:
+- **HTTPS** with SSL certificates
+- **Domain name** support
+- **Production security** features
+- **Auto-scaling** capabilities
+- **Monitoring** and backups
+
+See [CLOUD_DEPLOYMENT_GUIDE.md](CLOUD_DEPLOYMENT_GUIDE.md) for complete instructions.
+
 ## 👨‍🎓 Usage Guide
 
 ### For Students:
@@ -216,6 +236,10 @@ docker-compose up --build -d
 - Health monitoring
 - Responsive UI
 - Mobile-friendly design
+- **Network deployment** for classroom use
+- **Cloud deployment** for global access
+- **SSL/TLS security** with auto-renewal
+- **Production-ready** configurations
 
 ### 🔄 Potential Improvements:
 - Admin panel for teachers
@@ -239,6 +263,14 @@ docker-compose up --build -d
 - `OPTION_1_IMPLEMENTED.md` - Current database fix implementation
 - `fix-database.sh` - Automated fix script
 - `docker-compose-no-init.yml` - Fallback without init script
+
+### Cloud Deployment Files:
+- `CLOUD_DEPLOYMENT_GUIDE.md` - Complete cloud deployment guide
+- `docker-compose.production.yml` - Production-ready configuration
+- `deploy-cloud.sh` - Automated cloud deployment script
+- `.env.production.example` - Production environment template
+- `nginx/` - Nginx configuration for production
+- `production-init.sql` - Production database initialization
 
 ### Environment Variables:
 - `REACT_APP_API_URL` - Frontend API endpoint

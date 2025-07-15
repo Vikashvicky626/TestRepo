@@ -7,6 +7,7 @@
 .env.test.local
 .env.production.local
 .env.network
+.env.production
 
 # Network deployment files
 HOST_IP.txt
@@ -17,6 +18,16 @@ docker-compose.yml.backup
 docker-compose.yml.bak
 *.backup
 *.bak
+
+# Cloud deployment files
+ssl/
+nginx/logs/
+db-backups/
+logs/
+*.pem
+*.key
+*.crt
+*.csr
 
 # Python
 __pycache__/
