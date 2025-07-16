@@ -1,0 +1,126 @@
+{
+  "realm": "school",
+  "enabled": true,
+  "sslRequired": "none",
+  "clients": [
+    {
+      "clientId": "frontend",
+      "publicClient": true,
+      "redirectUris": [
+        "http://securetechsquad.com/*",
+        "http://www.securetechsquad.com/*",
+        "https://securetechsquad.com/*",
+        "https://www.securetechsquad.com/*"
+      ],
+      "webOrigins": [
+        "http://securetechsquad.com",
+        "http://www.securetechsquad.com",
+        "https://securetechsquad.com",
+        "https://www.securetechsquad.com"
+      ],
+      "standardFlowEnabled": true,
+      "frontchannelLogout": true,
+      "protocol": "openid-connect",
+      "defaultClientScopes": [
+        "web-origins",
+        "roles",
+        "profile",
+        "email"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "admin",
+      "enabled": true,
+      "firstName": "Admin",
+      "lastName": "User",
+      "email": "admin@securetechsquad.com",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin123"
+        }
+      ],
+      "realmRoles": [
+        "admin"
+      ]
+    },
+    {
+      "username": "teacher",
+      "enabled": true,
+      "firstName": "Teacher",
+      "lastName": "User",
+      "email": "teacher@securetechsquad.com",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "teacher123"
+        }
+      ],
+      "realmRoles": [
+        "teacher"
+      ]
+    },
+    {
+      "username": "student1",
+      "enabled": true,
+      "firstName": "Student",
+      "lastName": "One",
+      "email": "student1@securetechsquad.com",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "student123"
+        }
+      ],
+      "realmRoles": [
+        "student"
+      ]
+    }
+  ],
+  "roles": {
+    "realm": [
+      {
+        "name": "admin",
+        "description": "Administrator role"
+      },
+      {
+        "name": "teacher",
+        "description": "Teacher role"
+      },
+      {
+        "name": "student",
+        "description": "Student role"
+      }
+    ]
+  },
+  "defaultRoles": [
+    "student"
+  ],
+  "internationalizationEnabled": true,
+  "supportedLocales": [
+    "en",
+    "es",
+    "fr"
+  ],
+  "defaultLocale": "en",
+  "loginTheme": "base",
+  "adminTheme": "base",
+  "accountTheme": "base",
+  "emailTheme": "base",
+  "accessTokenLifespan": 3600,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "maxFailureWaitSeconds": 900,
+  "minimumQuickLoginWaitSeconds": 60,
+  "waitIncrementSeconds": 60,
+  "quickLoginCheckMilliSeconds": 1000,
+  "maxDeltaTimeSeconds": 43200,
+  "failureFactor": 30
+}
