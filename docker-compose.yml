@@ -56,7 +56,7 @@ services:
     environment:
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin
-      - KC_HOSTNAME=securetechsquad.com
+      - KC_HOSTNAME=139.84.222.64
       - KC_HOSTNAME_STRICT=false
       - KC_HTTP_ENABLED=true
     restart: unless-stopped
