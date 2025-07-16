@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# HTTP Deployment Script for Student Attendance System
-# This script deploys the attendance system to Vultr cloud instance on port 80
+# Port 3000 Deployment Script for Student Attendance System
+# This script deploys the attendance system to Vultr cloud instance on port 3000
 
 set -e
 
@@ -25,124 +25,142 @@ error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-echo "🚀 HTTP Deployment Script for Student Attendance System"
-echo "======================================================"
+echo "🚀 Port 3000 Deployment Script for Student Attendance System"
+echo "==========================================================="
 
 # Check if .env.production exists
 if [ ! -f ".env.production" ]; then
     error ".env.production file not found!"
     echo "The .env.production file has been created with default values."
-    echo "Please review and update it with your specific configuration if needed."
+    echo "Please review and update it with your specific configuration."
     exit 1
+fi
+
+log "Found .env.production file"
+
+# Check if Docker is installed
+if ! command -v docker &> /dev/null; then
+    error "Docker is not installed!"
+    log "Installing Docker..."
+    
+    # Update package list
+    sudo apt-get update
+    
+    # Install Docker
+    sudo apt-get install -y docker.io
+    
+    # Start and enable Docker
+    sudo systemctl start docker
+    sudo systemctl enable docker
+    
+    # Add current user to docker group
+    sudo usermod -aG docker $USER
+    
+    log "Docker installed successfully"
+fi
+
+# Check if Docker Compose is installed
+if ! command -v docker-compose &> /dev/null; then
+    error "Docker Compose is not installed!"
+    log "Installing Docker Compose..."
+    
+    # Install Docker Compose
+    sudo apt-get install -y docker-compose
+    
+    log "Docker Compose installed successfully"
 fi
 
 # Load environment variables
-set -a
-source .env.production
-set +a
-
-# Verify required variables
-if [ -z "$DOMAIN_NAME" ]; then
-    error "DOMAIN_NAME is not set in .env.production"
-    exit 1
-fi
-
-log "Deploying to domain: $DOMAIN_NAME"
-
-# Update system packages
-log "Updating system packages..."
-sudo apt-get update -y
-
-# Install Docker if not installed
-if ! command -v docker &> /dev/null; then
-    log "Installing Docker..."
-    sudo apt-get install -y docker.io
-    sudo systemctl start docker
-    sudo systemctl enable docker
-    sudo usermod -aG docker $USER
-fi
-
-# Install Docker Compose if not installed
-if ! command -v docker-compose &> /dev/null; then
-    log "Installing Docker Compose..."
-    sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-    sudo chmod +x /usr/local/bin/docker-compose
-fi
-
-# Create necessary directories
-log "Creating necessary directories..."
-mkdir -p ssl nginx/logs db-backups
+log "Loading environment variables..."
+export $(cat .env.production | grep -v '#' | xargs)
 
 # Stop any existing containers
 log "Stopping existing containers..."
-docker-compose -f docker-compose.production.yml down || true
+sudo docker-compose -f docker-compose.production.yml down || true
 
-# Remove old images (optional, saves disk space)
-log "Cleaning up old Docker images..."
-docker system prune -f || true
+# Clean up any orphaned containers
+log "Cleaning up orphaned containers..."
+sudo docker system prune -f
 
-# Create nginx configuration with actual domain
-log "Creating nginx configuration..."
-envsubst '$DOMAIN_NAME' < nginx/default.conf > nginx/default.conf.tmp
-mv nginx/default.conf.tmp nginx/default.conf
+# Build and start the application
+log "Building and starting the application..."
+sudo docker-compose -f docker-compose.production.yml up -d --build
 
-# Configure firewall for HTTP
-log "Configuring firewall..."
-sudo ufw --force enable || true
-sudo ufw allow ssh || true
-sudo ufw allow 80 || true
-sudo ufw allow 443 || true
-sudo ufw --force reload || true
-
-# Build and start containers
-log "Building and starting containers..."
-docker-compose -f docker-compose.production.yml build
-docker-compose -f docker-compose.production.yml up -d
-
-# Wait for services to be ready
+# Wait for services to start
 log "Waiting for services to start..."
 sleep 30
 
-# Check service health
-log "Checking service health..."
-for i in {1..10}; do
-    if curl -f http://localhost/health >/dev/null 2>&1; then
-        log "✅ Application is healthy and running on port 80"
-        break
-    fi
-    if [ $i -eq 10 ]; then
-        warn "Health check failed, but services may still be starting"
-    fi
-    sleep 5
-done
+# Check container status
+log "Checking container status..."
+sudo docker-compose -f docker-compose.production.yml ps
 
-# Display container status
-log "Container status:"
-docker-compose -f docker-compose.production.yml ps
+# Configure firewall to allow port 3000
+log "Configuring firewall..."
+sudo ufw allow 3000/tcp || true
+sudo ufw allow 5000/tcp || true
+sudo ufw allow 8080/tcp || true
 
-# Show final information
+# Test the application
+log "Testing the application..."
+
+# Test frontend
+if curl -f -s http://localhost:3000 > /dev/null; then
+    log "✅ Frontend is accessible on port 3000"
+else
+    warn "❌ Frontend is not accessible on port 3000"
+fi
+
+# Test backend
+if curl -f -s http://localhost:5000 > /dev/null; then
+    log "✅ Backend is accessible on port 5000"
+else
+    warn "❌ Backend is not accessible on port 5000"
+fi
+
+# Test keycloak
+if curl -f -s http://localhost:8080 > /dev/null; then
+    log "✅ Keycloak is accessible on port 8080"
+else
+    warn "❌ Keycloak is not accessible on port 8080"
+fi
+
+# Check Docker logs for any errors
+log "Checking for any container errors..."
+if sudo docker-compose -f docker-compose.production.yml logs --tail=10 | grep -i error; then
+    warn "Some errors found in container logs. Check with: sudo docker-compose -f docker-compose.production.yml logs"
+else
+    log "No errors found in container logs"
+fi
+
+# Final status check
+log "Final status check..."
+RUNNING_CONTAINERS=$(sudo docker-compose -f docker-compose.production.yml ps --services --filter "status=running" | wc -l)
+TOTAL_SERVICES=5  # frontend, backend, db, redis, keycloak
+
+if [ "$RUNNING_CONTAINERS" -eq "$TOTAL_SERVICES" ]; then
+    log "✅ All $TOTAL_SERVICES services are running successfully!"
+else
+    warn "❌ Only $RUNNING_CONTAINERS out of $TOTAL_SERVICES services are running"
+fi
+
 echo ""
 echo "🎉 Deployment completed!"
-echo "======================================================"
-echo "✅ Application URL: http://$DOMAIN_NAME"
-echo "✅ API URL: http://$DOMAIN_NAME/api"
-echo "✅ Keycloak URL: http://$DOMAIN_NAME/auth"
+echo "=============================="
+echo "✅ Frontend: http://securetechsquad.com:3000"
+echo "✅ Backend API: http://securetechsquad.com:5000"
+echo "✅ Keycloak: http://securetechsquad.com:8080"
 echo ""
-echo "📊 Default Login Credentials:"
-echo "   Admin: admin / admin123"
-echo "   Teacher: teacher / teacher123"
-echo "   Student: student1 / student123"
+echo "📋 Useful commands:"
+echo "  - Check status: sudo docker-compose -f docker-compose.production.yml ps"
+echo "  - View logs: sudo docker-compose -f docker-compose.production.yml logs"
+echo "  - Stop services: sudo docker-compose -f docker-compose.production.yml down"
+echo "  - Restart services: sudo docker-compose -f docker-compose.production.yml restart"
 echo ""
-echo "🔧 Management Commands:"
-echo "   View logs: docker-compose -f docker-compose.production.yml logs -f"
-echo "   Restart: docker-compose -f docker-compose.production.yml restart"
-echo "   Stop: docker-compose -f docker-compose.production.yml down"
-echo ""
-echo "📝 Next steps:"
-echo "1. Test the application at http://$DOMAIN_NAME"
-echo "2. Configure your DNS to point to this server"
-echo "3. Set up SSL certificates for HTTPS (optional)"
-echo "4. Configure backups and monitoring"
+echo "🔧 Troubleshooting:"
+echo "  - If services fail to start, check logs with: sudo docker-compose -f docker-compose.production.yml logs [service_name]"
+echo "  - To rebuild: sudo docker-compose -f docker-compose.production.yml up -d --build"
 echo ""
 
-log "Deployment completed successfully!"
+# Success message
+log "Student Attendance System deployed successfully on port 3000!"
+log "Access your application at: http://securetechsquad.com:3000"
