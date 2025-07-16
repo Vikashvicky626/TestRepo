@@ -14,8 +14,8 @@ function App() {
   
   // Configuration from environment variables
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-  const KEYCLOAK_URL = process.env.REACT_APP_KEYCLOAK_URL || 'http://securetechsquad:8080';
-  const FRONTEND_URL = process.env.REACT_APP_FRONTEND_URL || 'http://securetechsquad:3000';
+  const KEYCLOAK_URL = process.env.REACT_APP_KEYCLOAK_URL || 'http://securetechsquad.com:8080';
+  const FRONTEND_URL = process.env.REACT_APP_FRONTEND_URL || 'http://securetechsquad.com:3000';
 
   const handleSubmit = async () => {
     if (!status || !validStatuses.includes(status)) {
