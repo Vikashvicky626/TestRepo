@@ -7,7 +7,7 @@
 .env.test.local
 .env.production.local
 .env.network
-.env.production
+# .env.production - Temporarily allowing in repository (SECURITY RISK)
 
 # Network deployment files
 HOST_IP.txt
